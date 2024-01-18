@@ -146,13 +146,20 @@ def users_show(user_id):
 
     # snagging messages in order from the database;
     # user.messages won't be in order by default
+    """fetch the 100 most recent messages that user and the users followes have posted,"""
     messages = (Message
                 .query
                 .filter(Message.user_id == user_id)
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
-    return render_template('users/show.html', user=user, messages=messages)
+    following_user_ids = [followed_user.id for followed_user in user.following]
+
+    following_messages = Message.query.filter(Message.user_id.in_(following_user_ids)).all()
+
+    followed_msg = sorted(following_messages, key=lambda x: x.timestamp, reverse=True)[:100]
+
+    return render_template('users/show.html', user=user, messages=messages, followed_msg=followed_msg)
 
 
 @app.route('/users/<int:user_id>/following')
@@ -177,7 +184,6 @@ def users_followers(user_id):
 
     user = User.query.get_or_404(user_id)
     return render_template('users/followers.html', user=user)
-
 
 @app.route('/users/follow/<int:follow_id>', methods=['POST'])
 def add_follow(follow_id):
@@ -212,7 +218,24 @@ def stop_following(follow_id):
 @app.route('/users/profile', methods=["GET", "POST"])
 def profile():
     """Update profile for current user."""
-
+    user = User.query.get_or_404(session[CURR_USER_KEY])
+    form = UserAddForm(obj=user)
+    if form.validate_on_submit():
+        if User.authenticate(user.username, form.password.data):
+            user.username = form.username.data
+            user.email = form.email.data
+            user.image_url = form.image_url.data
+            user.header_image_url = form.header_image_url.data
+            user.bio = form.bio.data
+            user.location = form.location.data
+            db.session.commit()
+            flash("Profile updated!", "success")
+            return redirect(f"/users/{user.id}")
+        else:
+            flash("Invalid password", "danger")
+            return redirect("/")
+    else:
+        return render_template("/users/edit.html", form=form, user=user)
     # IMPLEMENT THIS
 
 
