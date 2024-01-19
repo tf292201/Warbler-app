@@ -198,6 +198,7 @@ class Message(db.Model):
     )
 
     user = db.relationship('User')
+    likes = db.relationship('Likes', backref='message', cascade='all, delete-orphan')
 
 
 def connect_db(app):

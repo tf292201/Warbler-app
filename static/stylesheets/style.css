@@ -541,3 +541,19 @@ p.card-bio {
 .message-404 .form-inline input {
   flex: 1;
 }
+
+.btn-secondary {
+  background-color: #ebebeb;
+  border-color: #c6cdd3;
+}
+
+.btn-secondary:hover:hover {
+  background-color: #0c8de4;
+  border-color: #0c8de4;
+}
+
+.btn-primary {
+  background-color: #1da1f2;
+  border-color: #1da1f2;
+  color: #f4f8fa;
+}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+  {% for like in likes %}
+    <div class="card">
+      <div class="card-body">
+        <a href="/users/{{ like.user.id }}">
+          <img src="{{ like.user.image_url }}" alt="" class="timeline-image">
+        </a>
+        <div class="message-area">
+          <a href="/users/{{ like.user.id }}">@{{ like.user.username }}</a>
+          <span class="text-muted">{{ like.timestamp.strftime('%d %B %Y') }}</span>
+          <p>{{ like.text }}</p>
+        </div>
+        <form method="POST" action="{% if like.id not in likes|map(attribute='id') %}/users/add_like/{{ like.id }}{% else %}/users/remove_like/{{ like.id }}{% endif %}" id="messages-form">
+          
+          <button class="btn btn-sm {% if like.id in likes|map(attribute='id') %}btn-primary{% else %}btn-secondary{% endif %}">
+            <i class="fa fa-thumbs-up"></i>
+            {{ like.likes | length }}
+        </button>
+  
+    </div>
+  {% endfor %}
+{% endblock %}

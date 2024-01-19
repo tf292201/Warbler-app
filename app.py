@@ -153,13 +153,7 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
-    following_user_ids = [followed_user.id for followed_user in user.following]
-
-    following_messages = Message.query.filter(Message.user_id.in_(following_user_ids)).all()
-
-    followed_msg = sorted(following_messages, key=lambda x: x.timestamp, reverse=True)[:100]
-
-    return render_template('users/show.html', user=user, messages=messages, followed_msg=followed_msg)
+    return render_template('users/show.html', user=user, messages=messages)
 
 
 @app.route('/users/<int:user_id>/following')
@@ -317,14 +311,15 @@ def homepage():
     """
 
     if g.user:
-        messages = (Message
-                    .query
-                    .order_by(Message.timestamp.desc())
-                    .limit(100)
-                    .all())
+
+        
+        following_user_ids = [followed_user.id for followed_user in g.user.following]
+
+        following_messages = Message.query.filter(Message.user_id.in_(following_user_ids)).all()
+
+        messages = sorted(following_messages, key=lambda x: x.timestamp, reverse=True)[:100]
 
         return render_template('home.html', messages=messages)
-
     else:
         return render_template('home-anon.html')
 
@@ -345,6 +340,45 @@ def add_header(req):
     req.headers["Expires"] = "0"
     req.headers['Cache-Control'] = 'public, max-age=0'
     return req
+
+###########################################################################
+# Like routes
+
+@app.route('/users/add_like/<int:msg_id>', methods=["POST"])
+def add_like(msg_id):
+    """Add a like for the currently-logged-in user."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    msg = Message.query.get_or_404(msg_id)
+    g.user.likes.append(msg)
+    db.session.commit()
+
+    return redirect("/")    
+
+@app.route('/users/remove_like/<int:msg_id>', methods=["POST"])
+def remove_like(msg_id):
+    """Remove a like for the currently-logged-in user."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    msg = Message.query.get_or_404(msg_id)
+    g.user.likes.remove(msg)
+    db.session.commit()
+
+    return redirect("/")
+
+@app.route('/users/<int:user_id>/likes')
+def show_likes(user_id):
+    """Show list of likes of this user."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    likes = g.user.likes
+    return render_template('users/likes.html', likes=likes)
 
 
 if __name__ == '__main__':
