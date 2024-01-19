@@ -6,7 +6,7 @@
       {% for message in messages %}
 
         <li class="list-group-item">
-          <a href="/messages/{{ message.id }}" class="message-link"/>
+          <a href="/messages/{{ message.id }}" class="message-link">
 
           <a href="/users/{{ user.id }}">
             <img src="{{ user.image_url }}" alt="user image" class="timeline-image">
@@ -17,30 +17,25 @@
             <span class="text-muted">{{ message.timestamp.strftime('%d %B %Y') }}</span>
             <p>{{ message.text }}</p>
           </div>
+
+          {% if g.user and message.user_id != g.user.id %}
+            <form method="POST" action="/users/add_like/{{ message.id }}" id="messages-form">
+              <button class="btn btn-sm {{ 'btn-primary' if message.id in likes else 'btn-secondary' }}">
+                <i class="fa fa-thumbs-up"></i> 
+              </button>
+            </form>
+          {% elif not g.user %}
+            {# Show the like button for anonymous users #}
+            <form method="POST" action="/users/add_like/{{ message.id }}" id="messages-form">
+              <button class="btn btn-sm {{ 'btn-primary' if message.id in likes else 'btn-secondary' }}">
+                <i class="fa fa-thumbs-up"></i> 
+              </button>
+            </form>
+          {% endif %}
         </li>
-        {% endfor %}
-
-        <!-- {% for msg in followed_msg %}
-            <li class="list-group-item">
-              <a href="/messages/{{ msg.id }}" class="message-link"/>
-
-              <a href="/users/{{ msg.user.id }}">
-                <img src="{{ msg.user.image_url }}" alt="user image" class="timeline-image">
-              </a>
-
-              <div class="message-area">
-                <a href="/users/{{ msg.user.id }}">@{{ msg.user.username }}</a>
-                <span class="text-muted">{{ msg.timestamp.strftime('%d %B %Y') }}</span>
-                <p>{{ msg.text }}</p>
-                
-              </div>
-            </li>
-          
-        {% endfor %} -->
-
-      
+        
+      {% endfor %}
 
     </ul>
-    
   </div>
 {% endblock %}
