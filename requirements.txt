@@ -108,3 +108,4 @@ Werkzeug==3.0.1
 WTForms==3.1.2
 wtforms-validators==1.0.0
 zipp==1.0.0
+pip==23.3.2
